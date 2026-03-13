@@ -1,28 +1,178 @@
-# Cow wisdom web server
 
-## Prerequisites
+# 🐮 Wisecow Application Deployment with Kubernetes and CI/CD
+
+## 📋 Project Overview
+This project demonstrates the containerization and deployment of the Wisecow application using Docker and Kubernetes with secure TLS communication. It also includes a CI pipeline implemented using GitHub Actions to automatically build and push Docker images to DockerHub.
+
+The Wisecow application generates random wisdom messages using the `fortune` utility and displays them using `cowsay`.
+
+## 🛠 Technologies Used
+- Docker
+- Kubernetes (Minikube)
+- NGINX Ingress Controller
+- TLS (Self-signed certificate)
+- GitHub Actions (CI/CD)
+- DockerHub
+
+## 🔄 Architecture Flow
+```
+Developer               │
+                        │ git push
+                        ▼
+GitHub Repository       │
+                        ▼
+GitHub Actions (CI/CD)  │
+                        │ Build Docker Image
+                        │ Push Image
+                        ▼
+Docker Hub              │
+                        ▼
+Kubernetes Deployment   │
+                        ▼
+Pods                    │
+                        ▼
+Service                 │
+                        ▼
+Ingress Controller      │
+                        ▼
+TLS Secure Access       │
+                        ▼
+https://wisecow.local
+```
+
+## 📁 Project Structure
 
 ```
-sudo apt install fortune-mod cowsay -y
+wisecow
+│
+├── Dockerfile
+├── wisecow.sh
+│
+├── k8s
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+│
+├── .github
+│   └── workflows
+│       └── ci-cd.yml
+│
+└── README.md
 ```
 
-## How to use?
+## 🐳 Dockerization
+Build Docker Image
 
-1. Run `./wisecow.sh`
-2. Point the browser to server port (default 4499)
+```bash
+docker build -t wisecow .
+```
 
-## What to expect?
-![wisecow](https://github.com/nyrahul/wisecow/assets/9133227/8d6bfde3-4a5a-480e-8d55-3fef60300d98)
+Run Container
 
-# Problem Statement
-Deploy the wisecow application as a k8s app
+```bash
+docker run -p 4499:4499 wisecow
+```
 
-## Requirement
-1. Create Dockerfile for the image and corresponding k8s manifest to deploy in k8s env. The wisecow service should be exposed as k8s service.
-2. Github action for creating new image when changes are made to this repo
-3. [Challenge goal]: Enable secure TLS communication for the wisecow app.
+## ☸️ Kubernetes Deployment
+Start Minikube
 
-## Expected Artifacts
-1. Github repo containing the app with corresponding dockerfile, k8s manifest, any other artifacts needed.
-2. Github repo with corresponding github action.
-3. Github repo should be kept private and the access should be enabled for following github IDs: nyrahul
+```bash
+minikube start
+```
+
+Apply Kubernetes Manifests
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+Verify Deployment
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+```
+
+## 🔐 TLS Setup
+A self-signed TLS certificate was created and stored as a Kubernetes secret.
+
+```bash
+kubectl create secret tls wisecow-tls \
+  --cert=tls.crt \
+  --key=tls.key
+```
+
+This enables secure HTTPS communication through the Ingress controller.
+
+## 🌐 Access the Application
+Add the following entry to your hosts file:
+
+```
+127.0.0.1 wisecow.local
+```
+
+Start the Minikube tunnel:
+
+```bash
+minikube tunnel
+```
+
+Access the application:
+
+```
+https://wisecow.local
+```
+
+## 📺 Example Output
+```
+You are a bundle of energy, always on the go.
+
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+```
+
+## 🔄 CI/CD Pipeline
+CI/CD is implemented using GitHub Actions.
+
+The pipeline automatically:
+
+- Builds the Docker image
+- Pushes the image to DockerHub
+
+Workflow file:
+
+```
+.github/workflows/ci-cd.yml
+```
+
+The pipeline is triggered automatically when code is pushed to the `main` branch.
+
+## 📦 DockerHub Image
+The Docker image is published at:
+
+```
+https://hub.docker.com/r/theena18/wisecow
+```
+
+## ⚠️ Continuous Deployment Note
+Continuous deployment to Kubernetes from GitHub Actions was not fully automated because the Kubernetes cluster is running locally using Minikube.
+
+In production environments this would typically be implemented using:
+
+- Cloud Kubernetes clusters (EKS / GKE / AKS)
+- GitOps tools like ArgoCD
+
+## ✅ Conclusion
+This project demonstrates:
+
+- Containerization using Docker
+- Kubernetes deployment and service exposure
+- Secure TLS communication via Ingress
+- CI/CD automation using GitHub Actions
+- Image publishing to DockerHub
