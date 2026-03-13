@@ -30,22 +30,3 @@ jobs:
     - name: Push Docker Image
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/wisecow:latest
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Set Kubeconfig
-      run: |
-        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
-        export KUBECONFIG=$PWD/kubeconfig
-
-    - name: Deploy Updated Image
-      run: |
-        kubectl set image deployment/wisecow-deployment \
-        wisecow=${{ secrets.DOCKER_USERNAME }}/wisecow:latest
